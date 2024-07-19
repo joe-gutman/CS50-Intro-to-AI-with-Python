@@ -55,12 +55,10 @@ def actions(board):
 
     possible_actions = []
 
-    for row in board:
-        for column in row:
-            if column.lower() == EMPTY:
+    for current_row, row in enumerate(board):
+        for current_column, column in enumerate(row):
+            if column is None:
                 possible_actions.append((current_row, current_column))
-            current_column += 1
-        current_row += 1
 
     return set(possible_actions)
 
@@ -69,8 +67,13 @@ def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
+    if action == None:
+        raise InvalidMoveError("Invalid Action: Move not made.")
+
     if board[action[0]][action[1]] != EMPTY:
-        raise InvalidMoveError("The move is not valid because the cell is already occupied.")
+        print("result", action)
+        raise InvalidMoveError("Invalid Action: Cell is already occupied.")
+        
     
     new_board = copy.deepcopy(board)
 
@@ -84,45 +87,39 @@ def winner(board):
     Returns the winner of the game, if there is one.
     """
 
-    move_count = 0
+    lines = []
 
-    for row in board:
-        for symbol in row:
-            if symbol != EMPTY:
-                move_count += 1
-    
-    if move_count < 5:
-        return None
-    else:
-        symbol = None
+    # Add rows to lines
+    lines.extend(board)
 
-        for column in range(len(board[0])):
-            for row in range(len(board)):
-                if all(i == row[0] for i in row) and row[0] != EMPTY:
-                    return board[row][0]
-                if symbol == None:
-                    symbol = board[row][column]
-                elif board[row][column] != symbol:
-                    break
-                
+    # Add columns to lines
+    lines.extend([[board[row][column] for row in range(len(board))] for column in range(len(board[0]))])
 
-        if symbol != None:
-            return symbol
-    
-    return None
+    # Add diagonals to lines
+    lines.append([board[i][i] for i in range(len(board))])
+    lines.append([board[i][-(i+1)] for i in range(len(board))])
+
+    for line in lines:
+        if line[0] is not EMPTY and all(item == line[0] for item in line):
+            return line[0]
         
+    return None
         
 
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    if winner(board) == None:
-        return False
-    else: 
+    if winner(board):
         return True
-    
 
+    for row in board:
+        for cell in row:
+            if cell == EMPTY:
+                return False
+
+    return True
+    
 
 def utility(board):
     """
@@ -141,4 +138,43 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+    current_player = player(board)
+
+    def min_value(board):
+        if terminal(board):
+            return utility(board)
+        value = math.inf
+        for move in actions(board):
+            value = min(value, max_value(result(board, move)))
+        return value
+
+    def max_value(board):
+        if terminal(board):
+            return utility(board)
+        value = -math.inf
+        for move in actions(board):
+            value = max(value, min_value(result(board, move)))
+        return value
+    
+    best_move = None
+
+    if current_player == X:
+        best_value = -math.inf
+        for move in actions(board):
+            new_board = result(board, move)
+            move_value = min_value(new_board)
+            if move_value > best_value:
+                best_value = move_value
+                best_move = move
+    else:
+        best_value = math.inf
+        for move in actions(board):
+            new_board = result(board, move)
+            move_value = max_value(new_board)
+            if move_value < best_value:
+                best_value = move_value
+                best_move = move
+
+    return best_move
+
+            
