@@ -9,24 +9,44 @@ BKnave = Symbol("B is a Knave")
 CKnight = Symbol("C is a Knight")
 CKnave = Symbol("C is a Knave")
 
+knowledge_base = And( 
+    Not(And(AKnight, AKnave)),
+    Not(And(BKnight, BKnave)),
+    Not(And(CKnight, CKnave)),
+    Or(AKnave, AKnight),
+    Or(BKnight, BKnave),
+    Or(CKnight, CKnave),
+)
+
 # Puzzle 0
 # A says "I am both a knight and a knave."
 knowledge0 = And(
-    # TODO
+    knowledge_base,
+
+    Or(Not(AKnight), And(AKnight, AKnave)),
+    Or(Not(AKnave), Not(And(AKnight, AKnave)))
 )
 
 # Puzzle 1
 # A says "We are both knaves."
 # B says nothing.
 knowledge1 = And(
-    # TODO
+    knowledge_base,
+
+    Or(Not(AKnight), And(AKnave, BKnave)),
+    Or(Not(AKnave), Not(And(AKnave, BKnave)))
 )
 
 # Puzzle 2
 # A says "We are the same kind."
 # B says "We are of different kinds."
 knowledge2 = And(
-    # TODO
+    knowledge_base,
+
+    Or(Not(AKnight), And(AKnight, BKnight)),
+    Or(Not(AKnave), Not(And(AKnight, BKnight))),
+    Or(Not(BKnight), And(AKnave, BKnight)),
+    Or(Not(BKnave), And(AKnight, BKnave)),
 )
 
 # Puzzle 3
@@ -35,9 +55,18 @@ knowledge2 = And(
 # B says "C is a knave."
 # C says "A is a knight."
 knowledge3 = And(
-    # TODO
-)
+    knowledge_base,
 
+    Not(AKnave),
+    Implication(AKnight, And(CKnight, BKnave)),
+    Implication(AKnave, And(CKnave, BKnight)),
+
+    Implication(BKnight, AKnave),
+    Implication(BKnight, CKnave),
+
+    Implication(CKnight, And(Not(BKnight), AKnight)),
+    Implication(CKnave, And(Not(AKnight), BKnight)),
+)
 
 def main():
     symbols = [AKnight, AKnave, BKnight, BKnave, CKnight, CKnave]
@@ -45,7 +74,7 @@ def main():
         ("Puzzle 0", knowledge0),
         ("Puzzle 1", knowledge1),
         ("Puzzle 2", knowledge2),
-        ("Puzzle 3", knowledge3)
+        ("Puzzle 3", knowledge3),
     ]
     for puzzle, knowledge in puzzles:
         print(puzzle)
