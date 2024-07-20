@@ -56,17 +56,19 @@ knowledge2 = And(
 # C says "A is a knight."
 knowledge3 = And(
     knowledge_base,
-
+    
     Not(AKnave),
-    Implication(AKnight, And(CKnight, BKnave)),
-    Implication(AKnave, And(CKnave, BKnight)),
+    Or(AKnight, AKnave),
+    Or(Not(BKnight), AKnave),
+    Or(Not(BKnight), CKnave),
 
-    Implication(BKnight, AKnave),
-    Implication(BKnight, CKnave),
+    Or(Not(BKnave), AKnight),
+    Or(Not(BKnave), CKnight),
 
-    Implication(CKnight, And(Not(BKnight), AKnight)),
-    Implication(CKnave, And(Not(AKnight), BKnight)),
+    Or(Not(CKnight), AKnight),
+    Or(Not(CKnave), Not(AKnight))
 )
+
 
 def main():
     symbols = [AKnight, AKnave, BKnight, BKnave, CKnight, CKnave]
