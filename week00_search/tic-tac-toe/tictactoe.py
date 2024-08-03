@@ -50,17 +50,13 @@ def actions(board):
     """
     Returns set of all possible actions (i, j) available on the board.
     """
-    current_row = 0
-    current_column = 0
 
     possible_actions = []
 
-    for row in board:
-        for column in row:
-            if column.lower() == EMPTY:
-                possible_actions.append((current_row, current_column))
-            current_column += 1
-        current_row += 1
+    for i, row in enumerate(board):
+        for j, column in enumerate(row):
+            if column == EMPTY:
+                possible_actions.append((i, j))
 
     return set(possible_actions)
 
@@ -94,16 +90,19 @@ def winner(board):
     if move_count < 5:
         return None
     else:
-        symbol = None
+        symbol = EMPTY
+
+        for row in board:
+            if row[0] != EMPTY and all(i == row[0] for i in row):
+                symbol = row[0]
 
         for column in range(len(board[0])):
-            for row in range(len(board)):
-                if all(i == row[0] for i in row) and row[0] != EMPTY:
-                    return board[row][0]
-                if symbol == None:
-                    symbol = board[row][column]
-                elif board[row][column] != symbol:
-                    break
+            symbol = board[0][column]
+            if symbol != EMPTY:
+                for row in board:
+                    if symbol != row[column]:
+                        break
+
                 
 
         if symbol != None:
@@ -111,18 +110,14 @@ def winner(board):
     
     return None
         
-        
-
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    if winner(board) == None:
+    if winner(board) == None and len(actions(board)) > 0:
         return False
     else: 
         return True
-    
-
 
 def utility(board):
     """
@@ -135,10 +130,44 @@ def utility(board):
         return -1
     else:
         return 0
+    
+def utilityToPlayer(utility):
+    """
+    Converts the utility the equivilant player X is 1, O is -1, or None if 0.
+    """
+
+    if utility == 1:
+        return X
+    elif utility == 0:
+        return O
+    else: 
+        return None
 
 
-def minimax(board):
+def minimax(board, moves, optimal_moves=None):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+    if moves == None:
+        moves = []
+
+    if terminal(board):
+        utility_winner = utility(board)
+        if utilityToPlayer(utility_winner) == player(board):
+            if optimal_moves == None or len(optimal_moves) < len(moves):
+                print('OPTIMAL MOVE:', optimal_moves)
+                return optimal_moves
+            
+    possible_moves = actions(board)
+    print('POSSIBLE MOVES:', possible_moves)
+    for move in possible_moves:
+        moves.append(moves)
+        new_board = result(board, move)
+
+        # next move is the potential optimal move
+        # make next move on imaginary board as current player track AI player symbol in minimax inputs)
+
+
+        return minimax(new_board, moves, optimal_moves)[0]
+
+    
